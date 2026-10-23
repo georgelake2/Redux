@@ -2,6 +2,7 @@ using System.Globalization;
 using API.Interfaces;
 using API.Interfaces.JSON_Objects;
 using API.Interfaces.JSON_Objects.Tables;
+using API.Interfaces.Steps;
 using API.Problems.NPComplete.NPC_AES.Solvers;
 
 namespace API.Problems.NPComplete.NPC_AES.Visualizations;
@@ -29,6 +30,8 @@ class AESRoundVisualization : IVisualization<AES, API_TableJSON> {
     public string[] contributors { get; } = { "George Lake" };
     public VisualizationType visualizationType { get; } = VisualizationType.DynamicTable;
     public ISolver solver { get; } = new AESBruteForceKeySearchSolver();
+    // Draws the typed steps the crypto solvers record (see RecoveredValues).
+    Type? IVisualization.StepShape => typeof(Assignment);
 
     // Color keys understood by both frontends (see Redux_Frontend components/theme.js).
     private const string ChangedColor = "ElementHighlight";
@@ -57,7 +60,7 @@ class AESRoundVisualization : IVisualization<AES, API_TableJSON> {
     /// key. The plaintext is the known one in Eve's view, and the decrypted block (message and padding) otherwise.
     /// </summary>
     public List<API_JSON> StepsVisualization(AES problem, List<object> steps) {
-        string? keyHex = steps.OfType<AESStep>().LastOrDefault(s => s.Variable == AESStep.Key)?.Value;
+        string? keyHex = AESStep.FromRun(steps).LastOrDefault(s => s.Variable == AESStep.Key)?.Value;
         if (keyHex is null || AES.TryParseBlock(keyHex) is not byte[] key)
             return new List<API_JSON>();
         byte[] plaintext = problem.knownPlaintext ?? AESCipher.Decrypt(problem.ciphertext, key);

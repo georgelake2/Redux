@@ -18,6 +18,10 @@ namespace redux_tests;
 /// ciphertexts were computed independently with the thesis Phase 0 reference implementation.
 /// </summary>
 public class AES_Tests {
+    // The values a solver's run recovered, read back from its typed steps.
+    private static List<AESStep> Recovered(ISolver solver, string instance) =>
+        AESStep.FromRun(solver.Run(instance, withSteps: true).Steps);
+
 
     private const string FipsKey = "2b7e151628aed2a6abf7158809cf4f3c";
     private const string FipsPlaintext = "3243f6a8885a308d313198a2e0370734";
@@ -194,7 +198,7 @@ public class AES_Tests {
     public void BruteForce_Recovers_The_Default_Message() {
         var solver = new AESBruteForceKeySearchSolver();
         Assert.Equal("(2b7e151628aed2a6abf7158809cf4f3c,\"HELLO WORLD\")", solver.solve(new AES()));
-        var steps = solver.GetSteps(new AES()).Cast<AESStep>().ToList();
+        var steps = Recovered(solver, new AES().instance);
         Assert.Equal(new[] { AESStep.Bits, AESStep.Key, AESStep.M }, steps.Select(s => s.Variable));
         Assert.Equal("3c (binary 00111100)", steps[0].Value);
         Assert.Contains("on try 61 of 256", steps[0].HowFound); // 0x3c = 60, counting from 0
@@ -207,7 +211,7 @@ public class AES_Tests {
     public void BruteForce_Recovers_The_FIPS197_Key_From_A_Known_Plaintext() {
         var solver = new AESBruteForceKeySearchSolver();
         Assert.Equal(FipsKey, solver.solve(new AES(FipsEveView)));
-        Assert.Equal(new[] { AESStep.Bits, AESStep.Key }, solver.GetSteps(new AES(FipsEveView)).Cast<AESStep>().Select(s => s.Variable));
+        Assert.Equal(new[] { AESStep.Bits, AESStep.Key }, Recovered(solver, FipsEveView).Select(s => s.Variable));
     }
 
     [Theory]
@@ -222,7 +226,7 @@ public class AES_Tests {
     public void BruteForce_Finds_The_Missing_Bits(string instance, string answer, string tries) {
         var solver = new AESBruteForceKeySearchSolver();
         Assert.Equal(answer, solver.solve(new AES(instance)));
-        Assert.Contains(tries, solver.GetSteps(new AES(instance)).Cast<AESStep>().First().HowFound);
+        Assert.Contains(tries, Recovered(solver, instance).First().HowFound);
     }
 
     [Fact]
@@ -232,8 +236,8 @@ public class AES_Tests {
             new AES($"(2b7e151628aed2a6abf7158809cf4f00,8,{FipsPlaintext},3925841d02dc09fbdc118597196a0b33)"));
         Assert.StartsWith("No solution", answer);
         Assert.Contains("all 256 tried", answer);
-        Assert.Empty(new AESBruteForceKeySearchSolver().GetSteps(
-            new AES($"(2b7e151628aed2a6abf7158809cf4f00,8,{FipsPlaintext},3925841d02dc09fbdc118597196a0b33)")));
+        Assert.Empty(Recovered(new AESBruteForceKeySearchSolver(),
+            $"(2b7e151628aed2a6abf7158809cf4f00,8,{FipsPlaintext},3925841d02dc09fbdc118597196a0b33)"));
     }
 
     [Fact]
@@ -293,7 +297,7 @@ public class AES_Tests {
 
     private static List<API_TableJSON> KnowledgeFrames(AES problem) =>
         new AESKnowledgeTableVisualization()
-            .StepsVisualization(problem, new AESBruteForceKeySearchSolver().GetSteps(problem))
+            .StepsVisualization(problem, ((ISolver)new AESBruteForceKeySearchSolver()).GetSteps(problem.instance))
             .Cast<API_TableJSON>().ToList();
 
     private static TableRow Row(API_TableJSON table, string id) => table.rows.Single(r => r.id == id);
@@ -340,7 +344,7 @@ public class AES_Tests {
 
     private static List<API_TableJSON> RoundFrames(AES problem) =>
         new AESRoundVisualization()
-            .StepsVisualization(problem, new AESBruteForceKeySearchSolver().GetSteps(problem))
+            .StepsVisualization(problem, ((ISolver)new AESBruteForceKeySearchSolver()).GetSteps(problem.instance))
             .Cast<API_TableJSON>().ToList();
 
     /// <summary>The 16 bytes of a grid, read column by column as FIPS 197 does.</summary>

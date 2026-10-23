@@ -10,6 +10,9 @@ using API.Problems.P.P_SPSP;
 using API.Problems.P.P_SPSP.Solvers;
 using API.Problems.P.P_SSSP;
 using API.Problems.P.P_SSSP.Solvers;
+using API.Problems.NPComplete.NPC_AES.Solvers;
+using API.Problems.NPComplete.NPC_DIFFIEHELLMAN.Solvers;
+using API.Problems.NPComplete.NPC_RSA.Solvers;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
@@ -43,6 +46,10 @@ public class SolveOnce_Tests {
                 ("sssptablevisualization", nameof(SSSPSolver)),
                 ("spspvisualization", nameof(SPSPSolver)),
                 ("spsptablevisualization", nameof(SPSPSolver)),
+                ("rsaknowledgetablevisualization", nameof(RSAFactoringAttackSolver)),
+                ("dhknowledgetablevisualization", nameof(DHBruteForceDiscreteLogSolver)),
+                ("aesknowledgetablevisualization", nameof(AESBruteForceKeySearchSolver)),
+                ("aesroundvisualization", nameof(AESBruteForceKeySearchSolver)),
             };
             foreach (var (vis, solver) in pictures)
                 foreach (var format in new[] { "list", "frames" })

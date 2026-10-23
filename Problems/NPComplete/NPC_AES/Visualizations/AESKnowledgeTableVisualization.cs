@@ -2,6 +2,7 @@ using System.Globalization;
 using API.Interfaces;
 using API.Interfaces.JSON_Objects;
 using API.Interfaces.JSON_Objects.Tables;
+using API.Interfaces.Steps;
 using API.Problems.NPComplete.NPC_AES.Solvers;
 
 namespace API.Problems.NPComplete.NPC_AES.Visualizations;
@@ -27,6 +28,8 @@ class AESKnowledgeTableVisualization : IVisualization<AES, API_TableJSON> {
     public string[] contributors { get; } = { "George Lake" };
     public VisualizationType visualizationType { get; } = VisualizationType.DynamicTable;
     public ISolver solver { get; } = new AESBruteForceKeySearchSolver();
+    // Draws the typed steps the crypto solvers record (see RecoveredValues).
+    Type? IVisualization.StepShape => typeof(Assignment);
 
     // Color keys understood by both frontends (see Redux_Frontend components/theme.js).
     private const string NewestRowColor = "ElementHighlight";
@@ -52,7 +55,7 @@ class AESKnowledgeTableVisualization : IVisualization<AES, API_TableJSON> {
 
     /// <summary>One table per recorded step, each with every value found so far.</summary>
     public List<API_JSON> StepsVisualization(AES problem, List<object> steps) {
-        List<AESStep> found = steps.OfType<AESStep>().ToList();
+        List<AESStep> found = AESStep.FromRun(steps);
         var frames = new List<API_JSON>();
         for (int i = 0; i < found.Count; i++) {
             string title = $"Step {i + 1} of {found.Count}: found the {SecretLabels[found[i].Variable].ToLowerInvariant()}";

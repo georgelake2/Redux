@@ -1,5 +1,6 @@
 using System.Numerics;
 using API.Interfaces;
+using API.Interfaces.Steps;
 
 namespace API.Problems.NPComplete.NPC_RSA.Solvers;
 
@@ -8,7 +9,7 @@ namespace API.Problems.NPComplete.NPC_RSA.Solvers;
 /// its owner made it (phi, then d), and decrypt. Each value it recovers is one recorded step, so the run
 /// doubles as a walkthrough of RSA key generation and decryption seen from the attacker's side.
 /// </summary>
-class RSAFactoringAttackSolver : ISolver<RSA> {
+class RSAFactoringAttackSolver : ISolver<RSA, Assignment> {
 
     // --- Fields ---
     public string solverName { get; } = "RSA Factoring Attack";
@@ -37,9 +38,15 @@ class RSAFactoringAttackSolver : ISolver<RSA> {
 
     // --- Methods ---
 
-    public string solve(RSA problem) => Attack(problem).Answer;
+    public string solve(RSA problem) => Solve(problem, StepRecorder<Assignment>.Off);
 
-    public List<object> GetSteps(RSA problem) => Attack(problem).Steps.Cast<object>().ToList();
+    /// <summary>Runs the attack once and records a step for each value it recovers (see RecoveredValues).</summary>
+    public string Solve(RSA problem, StepRecorder<Assignment> rec) {
+        SolveProbe.Hit(GetType());
+        var (answer, steps) = Attack(problem);
+        RecoveredValues.Record(rec, steps.Select(s => (s.Name, s.Value, s.HowFound)).ToList(), answer, Timeout);
+        return answer;
+    }
 
     /// <summary>
     /// Runs the attack once, returning the answer (the plaintext, or the reason there is none) together

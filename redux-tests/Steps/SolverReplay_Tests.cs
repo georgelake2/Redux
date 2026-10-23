@@ -1,5 +1,6 @@
 using API.Interfaces;
 using API.Interfaces.Steps;
+using API.Problems.NPComplete.NPC_RSA;
 using Xunit;
 
 namespace redux_tests;
@@ -47,6 +48,13 @@ public class SolverReplay_Tests {
                     Assert.Equal(path[i - 1], distances.Pred[path[i]]);
             }
             return distances;
+        }
+        if (lastPartial is Assignment recovered && recovered.Values.ContainsKey(RecoveredValues.AnswerName)) {
+            // The crypto attacks (RSA, Diffie-Hellman, AES; see RecoveredValues): every value they recovered, then the
+            // answer they built from those values.
+            Assert.Equal(answer, recovered.Values[RecoveredValues.AnswerName]);
+            Assert.True(recovered.Values.Count > 1, "the answer is recorded without the values it was built from");
+            return recovered;
         }
         throw new NotImplementedException(
             $"Add an expected final Partial for {lastPartial.GetType().Name} to SolverReplay_Tests.ExpectedFinalPartial.");

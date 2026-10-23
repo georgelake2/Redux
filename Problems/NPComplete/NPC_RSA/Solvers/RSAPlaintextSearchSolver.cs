@@ -1,5 +1,6 @@
 using System.Numerics;
 using API.Interfaces;
+using API.Interfaces.Steps;
 
 namespace API.Problems.NPComplete.NPC_RSA.Solvers;
 
@@ -8,7 +9,7 @@ namespace API.Problems.NPComplete.NPC_RSA.Solvers;
 /// ciphertext. It never learns p, q, phi or d; it just tries up to N messages per ciphertext, which is why
 /// real RSA is safe from it and why the factoring attack is the one worth studying.
 /// </summary>
-class RSAPlaintextSearchSolver : ISolver<RSA> {
+class RSAPlaintextSearchSolver : ISolver<RSA, Assignment> {
 
     // --- Fields ---
     public string solverName { get; } = "RSA Brute Force Plaintext Search";
@@ -36,9 +37,15 @@ class RSAPlaintextSearchSolver : ISolver<RSA> {
 
     // --- Methods ---
 
-    public string solve(RSA problem) => Search(problem).Answer;
+    public string solve(RSA problem) => Solve(problem, StepRecorder<Assignment>.Off);
 
-    public List<object> GetSteps(RSA problem) => Search(problem).Steps.Cast<object>().ToList();
+    /// <summary>Runs the attack once and records a step for each value it recovers (see RecoveredValues).</summary>
+    public string Solve(RSA problem, StepRecorder<Assignment> rec) {
+        SolveProbe.Hit(GetType());
+        var (answer, steps) = Search(problem);
+        RecoveredValues.Record(rec, steps.Select(s => (s.Name, s.Value, s.HowFound)).ToList(), answer, Timeout);
+        return answer;
+    }
 
     /// <summary>
     /// Runs the search once, returning the answer (the plaintext, or the reason there is none) and one step

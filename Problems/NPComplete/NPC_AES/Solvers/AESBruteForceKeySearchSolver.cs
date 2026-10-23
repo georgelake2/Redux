@@ -1,4 +1,6 @@
 using API.Interfaces;
+using API.Interfaces.Steps;
+using API.Problems.NPComplete.NPC_RSA;
 
 namespace API.Problems.NPComplete.NPC_AES.Solvers;
 
@@ -8,7 +10,7 @@ namespace API.Problems.NPComplete.NPC_AES.Solvers;
 /// decrypts the ciphertext to readable text. This 2^k search is the baseline Grover's algorithm is measured
 /// against: it needs only about (pi/4) x 2^(k/2) tries.
 /// </summary>
-class AESBruteForceKeySearchSolver : ISolver<AES> {
+class AESBruteForceKeySearchSolver : ISolver<AES, Assignment> {
 
     // --- Fields ---
     public string solverName { get; } = "AES Brute Force Key Search";
@@ -37,9 +39,15 @@ class AESBruteForceKeySearchSolver : ISolver<AES> {
 
     // --- Methods ---
 
-    public string solve(AES problem) => Attack(problem).Answer;
+    public string solve(AES problem) => Solve(problem, StepRecorder<Assignment>.Off);
 
-    public List<object> GetSteps(AES problem) => Attack(problem).Steps.Cast<object>().ToList();
+    /// <summary>Runs the attack once and records a step for each value it recovers (see RecoveredValues).</summary>
+    public string Solve(AES problem, StepRecorder<Assignment> rec) {
+        SolveProbe.Hit(GetType());
+        var (answer, steps) = Attack(problem);
+        RecoveredValues.Record(rec, steps.Select(s => (s.Variable, s.Value, s.HowFound)).ToList(), answer, Timeout);
+        return answer;
+    }
 
     /// <summary>
     /// Runs the attack once, returning the answer (or the reason there is none) and one step for each secret

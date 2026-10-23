@@ -2,6 +2,7 @@ using System.Numerics;
 using API.Interfaces;
 using API.Interfaces.JSON_Objects;
 using API.Interfaces.JSON_Objects.Tables;
+using API.Interfaces.Steps;
 using API.Problems.NPComplete.NPC_DIFFIEHELLMAN.Solvers;
 using API.Problems.NPComplete.NPC_RSA;
 
@@ -28,6 +29,8 @@ class DHKnowledgeTableVisualization : IVisualization<DIFFIEHELLMAN, API_TableJSO
     public string[] contributors { get; } = { "George Lake" };
     public VisualizationType visualizationType { get; } = VisualizationType.DynamicTable;
     public ISolver solver { get; } = new DHBruteForceDiscreteLogSolver();
+    // Draws the typed steps the crypto solvers record (see RecoveredValues).
+    Type? IVisualization.StepShape => typeof(Assignment);
 
     // Color keys understood by both frontends (see Redux_Frontend components/theme.js).
     private const string NewestRowColor = "ElementHighlight";
@@ -54,7 +57,7 @@ class DHKnowledgeTableVisualization : IVisualization<DIFFIEHELLMAN, API_TableJSO
 
     /// <summary>One table per recorded step, each with every value found so far.</summary>
     public List<API_JSON> StepsVisualization(DIFFIEHELLMAN problem, List<object> steps) {
-        List<DHStep> found = steps.OfType<DHStep>().ToList();
+        List<DHStep> found = DHStep.FromRun(steps);
         var frames = new List<API_JSON>();
         for (int i = 0; i < found.Count; i++) {
             string title = $"Step {i + 1} of {found.Count}: found {Describe(problem, found[i])}";

@@ -19,6 +19,9 @@ namespace redux_tests;
 /// message-mode ciphertexts were computed independently (A = 1 ... Z = 26, space = 27).
 /// </summary>
 public class RSA_Tests {
+    // The values a solver's run recovered, read back from its typed steps.
+    private static List<RSAStep> Recovered(ISolver solver, string instance) =>
+        RSAStep.FromRun(solver.Run(instance, withSteps: true).Steps);
 
     private const string Lesson = "(55,3,52)";
 
@@ -80,7 +83,7 @@ public class RSA_Tests {
 
         Assert.Equal("13", solver.solve(problem));
 
-        var steps = solver.GetSteps(problem).Cast<RSAStep>().ToList();
+        var steps = Recovered(solver, problem.instance);
         Assert.Equal(RSAStep.Secrets, steps.Select(s => s.Variable));
         Assert.Equal(new[] { "5", "11", "40", "27", "13" }, steps.Select(s => s.Value));
         Assert.Contains("4 tries", steps[0].HowFound); // 55 is divisible by 5 after trying 2, 3, 4 and 5
@@ -93,7 +96,7 @@ public class RSA_Tests {
 
         Assert.Equal("HELLO WORLD", solver.solve(problem));
 
-        var steps = solver.GetSteps(problem).Cast<RSAStep>().ToList();
+        var steps = Recovered(solver, problem.instance);
         Assert.Equal(4 + 11, steps.Count); // p, q, phi, d, then one step per letter
         var letters = steps.Skip(4).ToList();
         Assert.Equal(Enumerable.Range(0, 11).Select(i => (int?)i), letters.Select(s => s.Letter));
@@ -118,7 +121,7 @@ public class RSA_Tests {
 
         var attack = new RSAFactoringAttackSolver();
         Assert.Equal(m, attack.solve(problem));
-        Assert.Equal(new[] { p, q, phi, d, m }, attack.GetSteps(problem).Cast<RSAStep>().Select(s => s.Value));
+        Assert.Equal(new[] { p, q, phi, d, m }, Recovered(attack, problem.instance).Select(s => s.Value));
 
         Assert.Equal(m, new RSAPlaintextSearchSolver().solve(problem));
         Assert.True(new RSAVerifier().verify(problem, m));
@@ -157,7 +160,7 @@ public class RSA_Tests {
         var solver = new RSAPlaintextSearchSolver();
         Assert.Equal("13", solver.solve(new RSA(Lesson)));
 
-        var step = Assert.Single(solver.GetSteps(new RSA(Lesson)).Cast<RSAStep>());
+        var step = Assert.Single(Recovered(solver, Lesson));
         Assert.Equal(RSAStep.M, step.Variable);
         Assert.Equal("13", step.Value);
         Assert.Contains("14 tries", step.HowFound); // m = 0 through 13, as in the lesson
@@ -168,7 +171,7 @@ public class RSA_Tests {
         var solver = new RSAPlaintextSearchSolver();
         Assert.Equal("HELLO WORLD", solver.solve(new RSA()));
 
-        var steps = solver.GetSteps(new RSA()).Cast<RSAStep>().ToList();
+        var steps = Recovered(solver, new RSA().instance);
         Assert.Equal(11, steps.Count);
         Assert.All(steps, s => Assert.Equal(RSAStep.M, s.Variable));
         // The second L (letter 4) repeats letter 3's ciphertext, so it needs no search.

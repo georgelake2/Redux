@@ -1,5 +1,7 @@
 using System.Numerics;
 using API.Interfaces;
+using API.Interfaces.Steps;
+using API.Problems.NPComplete.NPC_RSA;
 
 namespace API.Problems.NPComplete.NPC_DIFFIEHELLMAN.Solvers;
 
@@ -7,7 +9,7 @@ namespace API.Problems.NPComplete.NPC_DIFFIEHELLMAN.Solvers;
 /// The most direct attack on Diffie-Hellman: try every exponent x = 0, 1, 2, ... until g^x mod p equals Alice's
 /// public value A. That x is her private key, which gives the shared secret and the message.
 /// </summary>
-class DHBruteForceDiscreteLogSolver : ISolver<DIFFIEHELLMAN> {
+class DHBruteForceDiscreteLogSolver : ISolver<DIFFIEHELLMAN, Assignment> {
 
     // --- Fields ---
     public string solverName { get; } = "DH Brute Force Discrete Log";
@@ -35,9 +37,15 @@ class DHBruteForceDiscreteLogSolver : ISolver<DIFFIEHELLMAN> {
 
     // --- Methods ---
 
-    public string solve(DIFFIEHELLMAN problem) => Attack(problem).Answer;
+    public string solve(DIFFIEHELLMAN problem) => Solve(problem, StepRecorder<Assignment>.Off);
 
-    public List<object> GetSteps(DIFFIEHELLMAN problem) => Attack(problem).Steps.Cast<object>().ToList();
+    /// <summary>Runs the attack once and records a step for each value it recovers (see RecoveredValues).</summary>
+    public string Solve(DIFFIEHELLMAN problem, StepRecorder<Assignment> rec) {
+        SolveProbe.Hit(GetType());
+        var (answer, steps) = Attack(problem);
+        RecoveredValues.Record(rec, steps.Select(s => (s.Name, s.Value, s.HowFound)).ToList(), answer, Timeout);
+        return answer;
+    }
 
     /// <summary>
     /// Runs the attack once, returning the answer (or the reason there is none) and one step for each secret

@@ -1,7 +1,9 @@
+using API.Problems.NPComplete.NPC_RSA;
+
 namespace API.Problems.NPComplete.NPC_AES;
 
 /// <summary>
-/// One value an attack has just worked out, recorded by a solver's GetSteps and drawn as part of the
+/// One value an attack has just worked out, recorded as one typed solver step (see RecoveredValues) and drawn as part of the
 /// "what the attacker knows" table (AESKnowledgeTableVisualization). The round-by-round visualization reads the
 /// recovered key from these steps to replay the encryption.
 /// </summary>
@@ -16,4 +18,8 @@ record AESStep(string Variable, string Value, string HowFound) {
 
     /// <summary>The secret values, in table order: the missing key bits, then the whole key, then the message.</summary>
     public static readonly string[] Secrets = { Bits, Key, M };
+
+    /// <summary>The values a typed run recovered, in order (see <see cref="RecoveredValues.Read"/>).</summary>
+    public static List<AESStep> FromRun(IEnumerable<object> steps) =>
+        RecoveredValues.Read(steps).Select(v => new AESStep(v.Name, v.Value, v.HowFound)).ToList();
 }

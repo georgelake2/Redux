@@ -18,6 +18,10 @@ namespace redux_tests;
 /// Expected message-mode ciphertexts were computed independently (A = 1 ... Z = 26, space = 27; c = code x s mod p).
 /// </summary>
 public class DIFFIEHELLMAN_Tests {
+    // The values a solver's run recovered, read back from its typed steps.
+    private static List<DHStep> Recovered(ISolver solver, string instance) =>
+        DHStep.FromRun(solver.Run(instance, withSteps: true).Steps);
+
 
     private const string Toy = "(23,5,4,10)"; // Phase 0: a = 4, b = 3, shared secret 18
 
@@ -84,7 +88,7 @@ public class DIFFIEHELLMAN_Tests {
     public void Both_Solvers_Recover_The_Default_Message() {
         foreach (ISolver solver in BothSolvers) {
             Assert.Equal("(13,\"HELLO WORLD\")", solver.solve(new DIFFIEHELLMAN().instance));
-            var steps = solver.GetSteps(new DIFFIEHELLMAN().instance).Cast<DHStep>().ToList();
+            var steps = Recovered(solver, new DIFFIEHELLMAN().instance);
             Assert.Equal(2 + 11, steps.Count); // a, s, then one step per letter
             Assert.Equal(new[] { "13", "40" }, steps.Take(2).Select(s => s.Value));
             Assert.Equal(new[] { "8", "5", "12", "12", "15", "27", "23", "15", "18", "12", "4" }, steps.Skip(2).Select(s => s.Value));
@@ -96,7 +100,7 @@ public class DIFFIEHELLMAN_Tests {
     public void Both_Solvers_Recover_The_Phase0_Toy_Exchange() {
         foreach (ISolver solver in BothSolvers) {
             Assert.Equal("4", solver.solve(Toy));
-            Assert.Equal(new[] { "4", "18" }, solver.GetSteps(Toy).Cast<DHStep>().Select(s => s.Value));
+            Assert.Equal(new[] { "4", "18" }, Recovered(solver, Toy).Select(s => s.Value));
         }
     }
 
@@ -116,13 +120,13 @@ public class DIFFIEHELLMAN_Tests {
 
     [Fact]
     public void BruteForce_Reports_The_Number_Of_Tries() {
-        var step = new DHBruteForceDiscreteLogSolver().GetSteps(new DIFFIEHELLMAN()).Cast<DHStep>().First();
+        var step = Recovered(new DHBruteForceDiscreteLogSolver(), new DIFFIEHELLMAN().instance).First();
         Assert.Contains("after 14 tries", step.HowFound); // x = 0 through 13
     }
 
     [Fact]
     public void BabyStepGiantStep_Explains_The_Match() {
-        var step = new DHBabyStepGiantStepSolver().GetSteps(new DIFFIEHELLMAN()).Cast<DHStep>().First();
+        var step = Recovered(new DHBabyStepGiantStepSolver(), new DIFFIEHELLMAN().instance).First();
         // m = ceil(sqrt(58)) = 8; 13 = 1 x 8 + 5
         Assert.Contains("Giant step 1 matched baby step 5", step.HowFound);
         Assert.Contains("a = 1 × 8 + 5 = 13", step.HowFound);

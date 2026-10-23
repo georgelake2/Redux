@@ -1,5 +1,7 @@
 using System.Numerics;
 using API.Interfaces;
+using API.Interfaces.Steps;
+using API.Problems.NPComplete.NPC_RSA;
 
 namespace API.Problems.NPComplete.NPC_DIFFIEHELLMAN.Solvers;
 
@@ -9,7 +11,7 @@ namespace API.Problems.NPComplete.NPC_DIFFIEHELLMAN.Solvers;
 /// 2 sqrt(p) multiplications instead of p: much faster than brute force, yet still exponential in the key's bit
 /// length, which is why Shor's quantum algorithm matters.
 /// </summary>
-class DHBabyStepGiantStepSolver : ISolver<DIFFIEHELLMAN> {
+class DHBabyStepGiantStepSolver : ISolver<DIFFIEHELLMAN, Assignment> {
 
     // --- Fields ---
     public string solverName { get; } = "DH Baby-Step Giant-Step";
@@ -38,9 +40,15 @@ class DHBabyStepGiantStepSolver : ISolver<DIFFIEHELLMAN> {
 
     // --- Methods ---
 
-    public string solve(DIFFIEHELLMAN problem) => Attack(problem).Answer;
+    public string solve(DIFFIEHELLMAN problem) => Solve(problem, StepRecorder<Assignment>.Off);
 
-    public List<object> GetSteps(DIFFIEHELLMAN problem) => Attack(problem).Steps.Cast<object>().ToList();
+    /// <summary>Runs the attack once and records a step for each value it recovers (see RecoveredValues).</summary>
+    public string Solve(DIFFIEHELLMAN problem, StepRecorder<Assignment> rec) {
+        SolveProbe.Hit(GetType());
+        var (answer, steps) = Attack(problem);
+        RecoveredValues.Record(rec, steps.Select(s => (s.Name, s.Value, s.HowFound)).ToList(), answer, Timeout);
+        return answer;
+    }
 
     /// <summary>
     /// Runs the attack once, returning the answer (or the reason there is none) and one step for each secret

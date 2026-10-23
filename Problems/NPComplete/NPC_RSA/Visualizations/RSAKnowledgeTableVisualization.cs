@@ -1,6 +1,7 @@
 using API.Interfaces;
 using API.Interfaces.JSON_Objects;
 using API.Interfaces.JSON_Objects.Tables;
+using API.Interfaces.Steps;
 using API.Problems.NPComplete.NPC_RSA.Solvers;
 
 namespace API.Problems.NPComplete.NPC_RSA.Visualizations;
@@ -30,6 +31,8 @@ class RSAKnowledgeTableVisualization : IVisualization<RSA, API_TableJSON> {
     public string[] contributors { get; } = { "George Lake" };
     public VisualizationType visualizationType { get; } = VisualizationType.DynamicTable;
     public ISolver solver { get; } = new RSAFactoringAttackSolver();
+    // Draws the typed steps the crypto solvers record (see RecoveredValues).
+    Type? IVisualization.StepShape => typeof(Assignment);
 
     // Color keys understood by both frontends (see Redux_Frontend components/theme.js).
     private const string NewestRowColor = "ElementHighlight";
@@ -57,7 +60,7 @@ class RSAKnowledgeTableVisualization : IVisualization<RSA, API_TableJSON> {
 
     /// <summary>One table per recorded step, each with every value found so far.</summary>
     public List<API_JSON> StepsVisualization(RSA problem, List<object> steps) {
-        List<RSAStep> found = steps.OfType<RSAStep>().ToList();
+        List<RSAStep> found = RSAStep.FromRun(steps);
         var frames = new List<API_JSON>();
         for (int i = 0; i < found.Count; i++) {
             string title = $"Step {i + 1} of {found.Count}: found {Describe(problem, found[i])}";
