@@ -43,6 +43,8 @@ class AES : IProblem<AESBruteForceKeySearchSolver, AESVerifier, AESKnowledgeTabl
         "National Institute of Standards and Technology (2001, updated 2023). Advanced Encryption Standard (AES). " +
         "FIPS PUB 197. Daemen, J., and Rijmen, V. (2002). The Design of Rijndael. Springer.";
     public string sourceLink { get; } = "https://doi.org/10.6028/NIST.FIPS.197-upd1";
+    // The walkthrough on georgelake.dev, opened on its high-school version (a switch on the page shows the CS one).
+    public string walkthroughLink { get; } = "https://georgelake.dev/research/guides/aes/#hs";
     public string sourceFile { get; } = SourceFile.Path();
     public string wikiName { get; } = "https://en.wikipedia.org/wiki/Advanced_Encryption_Standard";
     public string[] contributors { get; } = { "George Lake" };

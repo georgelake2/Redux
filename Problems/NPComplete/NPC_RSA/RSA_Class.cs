@@ -40,6 +40,8 @@ class RSA : IProblem<RSAFactoringAttackSolver, RSAVerifier, RSAKnowledgeTableVis
         "Rivest, R. L., Shamir, A., and Adleman, L. (1978). A Method for Obtaining Digital Signatures and " +
         "Public-Key Cryptosystems. Communications of the ACM, 21(2), 120-126.";
     public string sourceLink { get; } = "https://doi.org/10.1145/359340.359342";
+    // The walkthrough on georgelake.dev, opened on its high-school version (a switch on the page shows the CS one).
+    public string walkthroughLink { get; } = "https://georgelake.dev/research/guides/rsa/#hs";
     public string sourceFile { get; } = SourceFile.Path();
     public string wikiName { get; } = "https://en.wikipedia.org/wiki/RSA_(cryptosystem)";
     public string[] contributors { get; } = { "George Lake" };

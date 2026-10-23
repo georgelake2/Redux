@@ -43,6 +43,8 @@ class DIFFIEHELLMAN : IProblem<DHBruteForceDiscreteLogSolver, DiffieHellmanVerif
         "Theory, 22(6), 644-654. ElGamal, T. (1985). A Public Key Cryptosystem and a Signature Scheme Based on " +
         "Discrete Logarithms. IEEE Transactions on Information Theory, 31(4), 469-472.";
     public string sourceLink { get; } = "https://doi.org/10.1109/TIT.1976.1055638";
+    // The walkthrough on georgelake.dev, opened on its high-school version (a switch on the page shows the CS one).
+    public string walkthroughLink { get; } = "https://georgelake.dev/research/guides/dh/#hs";
     public string sourceFile { get; } = SourceFile.Path();
     public string wikiName { get; } = "https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange";
     public string[] contributors { get; } = { "George Lake" };
