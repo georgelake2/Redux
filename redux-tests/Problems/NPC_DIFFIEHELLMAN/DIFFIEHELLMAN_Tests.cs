@@ -124,8 +124,9 @@ public class DIFFIEHELLMAN_Tests {
     public void BabyStepGiantStep_Explains_The_Match() {
         var step = new DHBabyStepGiantStepSolver().GetSteps(new DIFFIEHELLMAN()).Cast<DHStep>().First();
         // m = ceil(sqrt(58)) = 8; 13 = 1 x 8 + 5
-        Assert.Contains("m = 8", step.HowFound);
-        Assert.Contains("giant step i = 1 matched baby step j = 5", step.HowFound);
+        Assert.Contains("Giant step 1 matched baby step 5", step.HowFound);
+        Assert.Contains("a = 1 × 8 + 5 = 13", step.HowFound);
+        Assert.Contains("(10 multiplications)", step.HowFound); // 8 baby steps, then giant steps 0 and 1
     }
 
     [Theory]

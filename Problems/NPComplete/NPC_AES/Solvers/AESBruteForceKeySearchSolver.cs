@@ -59,11 +59,10 @@ class AESBruteForceKeySearchSolver : ISolver<AES> {
                 continue;
 
             string test = problem.isMessage
-                ? "decrypted the ciphertext to letters and spaces with valid padding"
+                ? "decrypted to letters and spaces with valid padding"
                 : "encrypted the known plaintext to the ciphertext";
             steps.Add(new AESStep(AESStep.Bits, problem.MissingBitsText(candidate),
-                $"Tried the missing bits 0, 1, 2, ... (one AES run each): this value {test}, on try " +
-                $"{candidate + 1} of {problem.candidateCount}"));
+                $"Counted up from 0: on try {candidate + 1} of {problem.candidateCount}, it {test}"));
             steps.Add(new AESStep(AESStep.Key, AES.Hex(key),
                 $"The {AESCipher.KeySize * 8 - problem.unknownBits} known bits followed by the {problem.unknownBits} found bits"));
             if (problem.isMessage) {

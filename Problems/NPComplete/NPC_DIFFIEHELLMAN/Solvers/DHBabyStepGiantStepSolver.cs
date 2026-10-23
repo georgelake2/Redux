@@ -74,9 +74,7 @@ class DHBabyStepGiantStepSolver : ISolver<DIFFIEHELLMAN> {
                 BigInteger key = i * m + j;
                 BigInteger multiplications = m + i + 1;
                 steps.Add(new DHStep(DHStep.A, key.ToString(),
-                    $"Baby-step giant-step with m = {m}: stored {m} baby steps {g}^j, and giant step i = {i} matched " +
-                    $"baby step j = {j}, so a = i × m + j = {i} × {m} + {j} = {key} " +
-                    $"({multiplications} multiplications instead of up to {p - 1} tries)"));
+                    $"Giant step {i} matched baby step {j}, so a = {i} × {m} + {j} = {key} ({multiplications} multiplications)"));
                 return (DHKeyRecovery.FinishFromPrivateKey(problem, key, steps), steps);
             }
             gamma = gamma * giantFactor % p;
