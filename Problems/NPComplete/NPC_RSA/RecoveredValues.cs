@@ -15,6 +15,12 @@ static class RecoveredValues {
     public const string AnswerName = "answer";
 
     /// <summary>
+    /// How an answer starts when a solver could not run its attack at all (for example, a quantum service that is
+    /// unreachable or an instance too big for it). Like "No solution" and the timeout, it is recorded as a failure.
+    /// </summary>
+    public const string NotRun = "Not run:";
+
+    /// <summary>
     /// Records a finished attack: one Accept step per value in <paramref name="found"/>, in order, then Done. The
     /// attacks run fast and find only a few values, so they record after the run rather than during it.
     /// </summary>
@@ -25,7 +31,8 @@ static class RecoveredValues {
             var (name, _, howFound) = found[i];
             rec.Accept(() => Known(found.Take(upTo)), () => howFound, name);
         }
-        bool ok = answer != timeout && !answer.StartsWith("No solution", StringComparison.Ordinal);
+        bool ok = answer != timeout && !answer.StartsWith("No solution", StringComparison.Ordinal)
+            && !answer.StartsWith(NotRun, StringComparison.Ordinal);
         var all = Known(found).Values.Append(new KeyValuePair<string, string>(AnswerName, answer));
         rec.Done(new Assignment(all), ok, ok ? $"Recovered the answer: {answer}" : answer);
     }

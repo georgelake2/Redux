@@ -11,7 +11,7 @@ builder.Services.Configure<QuantumSolverSettings>(
 builder.Services.AddHttpClient("quantum", (sp, client) => {
     var settings = sp.GetRequiredService<IOptionsMonitor<QuantumSolverSettings>>().CurrentValue;
     client.BaseAddress = new Uri(settings.BaseURL);
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromSeconds(API.Tools.QuantumServerAPI.RequestTimeoutSeconds);
 });
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

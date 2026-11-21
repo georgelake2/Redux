@@ -152,6 +152,7 @@ public class SolverType_Tests : IClassFixture<AppFactory> {
         // bucket would be a category error, since Shor's algorithm's whole point is a
         // quantum-vs-classical complexity separation.
         "ShorsQuantumSolver",
+        "RSAShorsQuantumSolver",
         "SATGroverSolver",
         "UnstructuredGroverSolver",
         "DeutschQuantumSolver",

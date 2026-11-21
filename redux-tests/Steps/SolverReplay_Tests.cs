@@ -53,6 +53,11 @@ public class SolverReplay_Tests {
             // The crypto attacks (RSA, Diffie-Hellman, AES; see RecoveredValues): every value they recovered, then the
             // answer they built from those values.
             Assert.Equal(answer, recovered.Values[RecoveredValues.AnswerName]);
+            if (answer.StartsWith(RecoveredValues.NotRun, StringComparison.Ordinal)) {
+                // A quantum attack with no quantum service to call (as in this test run) recovers nothing.
+                Assert.Single(recovered.Values);
+                return recovered;
+            }
             Assert.True(recovered.Values.Count > 1, "the answer is recorded without the values it was built from");
             return recovered;
         }
@@ -102,7 +107,9 @@ public class SolverReplay_Tests {
         // (c) Done.Ok agrees with the problem's own verifier on the returned answer.
         bool? ok = last.Ok;
         Assert.NotNull(ok);
-        bool verified = problem.defaultVerifier.verify(instance, CertificateFrom(withSteps.Answer));
+        // A crypto attack that could not run (see RecoveredValues.NotRun) has no certificate to verify: it failed.
+        bool verified = !withSteps.Answer.StartsWith(RecoveredValues.NotRun, StringComparison.Ordinal)
+            && problem.defaultVerifier.verify(instance, CertificateFrom(withSteps.Answer));
         Assert.Equal(verified, ok);
     }
 

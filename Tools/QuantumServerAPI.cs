@@ -8,6 +8,14 @@ namespace API.Tools;
 /// </summary>
 public class QuantumServerAPI {
     // --- Fields ---
+
+    /// <summary>
+    /// How long a request to the quantum service may take (set on the "quantum" HttpClient in Program.cs). It must
+    /// exceed the service's own solver timeout (60 s), so a solver that runs too long comes back as the service's
+    /// {"answer": "timeout"} rather than a dropped request.
+    /// </summary>
+    public const int RequestTimeoutSeconds = 70;
+
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
 
@@ -48,7 +56,7 @@ public class QuantumServerAPI {
         } catch (HttpRequestException ex) {
             throw new HttpRequestException($"Failed to POST to {_baseUrl}{endpoint}: {ex.Message}", ex);
         } catch (TaskCanceledException ex) {
-            throw new TimeoutException($"Request to {_baseUrl}{endpoint} timed out after 30 seconds", ex);
+            throw new TimeoutException($"Request to {_baseUrl}{endpoint} timed out after {RequestTimeoutSeconds} seconds", ex);
         }
     }
 
@@ -79,7 +87,7 @@ public class QuantumServerAPI {
         } catch (HttpRequestException ex) {
             throw new HttpRequestException($"Failed to POST to {_baseUrl}{endpoint}: {ex.Message}", ex);
         } catch (TaskCanceledException ex) {
-            throw new TimeoutException($"Request to {_baseUrl}{endpoint} timed out after 30 seconds", ex);
+            throw new TimeoutException($"Request to {_baseUrl}{endpoint} timed out after {RequestTimeoutSeconds} seconds", ex);
         }
     }
 

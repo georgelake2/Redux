@@ -53,7 +53,7 @@ class RSAFactoringAttackSolver : ISolver<RSA, Assignment> {
     /// with one step for each secret value recovered along the way.
     /// </summary>
     private (string Answer, List<RSAStep> Steps) Attack(RSA problem) {
-        BigInteger n = problem.modulus, e = problem.publicExponent;
+        BigInteger n = problem.modulus;
         var steps = new List<RSAStep>();
 
         // 1. Trial division: the smallest divisor of N is p.
@@ -81,46 +81,8 @@ class RSAFactoringAttackSolver : ISolver<RSA, Assignment> {
             return ($"No solution: N = {n} is not a product of two distinct primes", steps);
         steps.Add(new RSAStep(RSAStep.Q, q.ToString(), $"q = N / p = {n} / {p}"));
 
-        // 3. Euler's totient, which only someone who knows p and q can compute.
-        BigInteger phi = (p - 1) * (q - 1);
-        steps.Add(new RSAStep(RSAStep.Phi, phi.ToString(), $"φ = (p - 1)(q - 1) = {p - 1} × {q - 1}"));
-
-        // 4. The private exponent: the inverse of e modulo phi.
-        BigInteger? inverse = ModularInverse(e, phi);
-        if (inverse is not BigInteger d)
-            return ($"No solution: e = {e} has no inverse mod φ = {phi}, so there is no private key", steps);
-        steps.Add(new RSAStep(RSAStep.D, d.ToString(),
-            $"Extended Euclid: d = e⁻¹ mod φ, since {e} × {d} = {e * d} ≡ 1 (mod {phi})"));
-
-        // 5. Decrypt every ciphertext with the recovered key, one step each.
-        var plaintexts = new List<BigInteger>();
-        for (int i = 0; i < problem.ciphertexts.Count; i++) {
-            BigInteger c = problem.ciphertexts[i];
-            BigInteger m = BigInteger.ModPow(c, d, n);
-            plaintexts.Add(m);
-            steps.Add(problem.isMessage
-                ? new RSAStep(RSAStep.M, m.ToString(),
-                    $"Decrypt letter {i + 1}: {c}^{d} mod {n} = {m}, which is {LetterName(m)}", i)
-                : new RSAStep(RSAStep.M, m.ToString(), $"Decrypt: m = c^d mod N = {c}^{d} mod {n}"));
-        }
-        return (problem.Answer(plaintexts), steps);
-    }
-
-    private static string LetterName(BigInteger code) =>
-        RSAAlphabet.Decode(code) is char letter ? RSAAlphabet.Describe(letter) : "not a letter code";
-
-    /// <summary>The inverse of a modulo m by the extended Euclidean algorithm, or null if gcd(a, m) != 1.</summary>
-    private static BigInteger? ModularInverse(BigInteger a, BigInteger m) {
-        // Invariant: oldR = oldS * a (mod m) and r = s * a (mod m).
-        BigInteger oldR = a % m, r = m, oldS = 1, s = 0;
-        while (r != 0) {
-            BigInteger quotient = oldR / r;
-            (oldR, r) = (r, oldR - quotient * r);
-            (oldS, s) = (s, oldS - quotient * s);
-        }
-        if (oldR != 1)
-            return null;
-        return ((oldS % m) + m) % m;
+        // 3 to 5. Rebuild the private key and decrypt, as every factoring-based attack does.
+        return (RSAKeyRecovery.Finish(problem, p, q, steps), steps);
     }
 
     /// <summary>Primality by trial division; only called on the cofactor q, after p has been found.</summary>

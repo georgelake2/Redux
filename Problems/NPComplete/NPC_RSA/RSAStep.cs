@@ -2,8 +2,8 @@ namespace API.Problems.NPComplete.NPC_RSA;
 
 /// <summary>
 /// One value an attack has just worked out, recorded as one typed solver step (see RecoveredValues) and drawn as part of the
-/// "what the attacker knows" table (RSAKnowledgeTableVisualization). Both RSA solvers record these, so the
-/// same table can replay either solver's run.
+/// "what the attacker knows" table (RSAKnowledgeTableVisualization). Every RSA solver records these, so the
+/// same table can replay any solver's run.
 /// </summary>
 /// <param name="Variable">Which secret was found: one of the keys in <see cref="Secrets"/>.</param>
 /// <param name="Value">The value found, as text.</param>
