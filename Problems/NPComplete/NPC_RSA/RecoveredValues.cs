@@ -22,10 +22,12 @@ static class RecoveredValues {
 
     /// <summary>
     /// Records a finished attack: one Accept step per value in <paramref name="found"/>, in order, then Done. The
-    /// attacks run fast and find only a few values, so they record after the run rather than during it.
+    /// attacks run fast and find only a few values, so they record after the run rather than during it. <c>extra</c>
+    /// adds values to the Done step only, such as a quantum service's record of the run, for a visualization that
+    /// draws more than the recovered values; replaying the Accept steps never sees them.
     /// </summary>
     public static void Record(StepRecorder<Assignment> rec, IReadOnlyList<(string Name, string Value, string HowFound)> found,
-            string answer, string timeout) {
+            string answer, string timeout, IEnumerable<KeyValuePair<string, string>>? extra = null) {
         for (int i = 0; i < found.Count; i++) {
             int upTo = i + 1;
             var (name, _, howFound) = found[i];
@@ -33,7 +35,8 @@ static class RecoveredValues {
         }
         bool ok = answer != timeout && !answer.StartsWith("No solution", StringComparison.Ordinal)
             && !answer.StartsWith(NotRun, StringComparison.Ordinal);
-        var all = Known(found).Values.Append(new KeyValuePair<string, string>(AnswerName, answer));
+        var all = Known(found).Values.Append(new KeyValuePair<string, string>(AnswerName, answer))
+            .Concat(extra ?? Enumerable.Empty<KeyValuePair<string, string>>());
         rec.Done(new Assignment(all), ok, ok ? $"Recovered the answer: {answer}" : answer);
     }
 
@@ -42,6 +45,11 @@ static class RecoveredValues {
         steps.OfType<SolverStep<Assignment>>()
             .Where(s => s.Event == StepEvent.Accept)
             .Select(s => (s.Focus[0], s.Partial.Values[s.Focus[0]], s.Caption));
+
+    /// <summary>A value the Done step carries (see Record's <c>extra</c>), or null if the run has none.</summary>
+    public static string? DoneValue(IEnumerable<object> steps, string name) =>
+        steps.OfType<SolverStep<Assignment>>()
+            .LastOrDefault(s => s.Event == StepEvent.Done)?.Partial?.Values.GetValueOrDefault(name);
 
     private static Assignment Known(IEnumerable<(string Name, string Value, string HowFound)> found) =>
         new(found.Select(v => new KeyValuePair<string, string>(v.Name, v.Value)));
