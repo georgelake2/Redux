@@ -90,6 +90,7 @@ public class RSAShorsVisualizations_Tests {
         Assert.Equal(1 + 12 + 12 + 12 + 12, gates.Count); // X, H, multiplies, QFT†, measurements
         Assert.Contains(gates, g => g.GetProperty("label").GetString() == "×a^4");
         Assert.Equal(4, d3.GetProperty("overlays").GetArrayLength());
+        Assert.True(d3.GetProperty("metadata").GetProperty("readOnly").GetBoolean());
     }
 
     [Fact]

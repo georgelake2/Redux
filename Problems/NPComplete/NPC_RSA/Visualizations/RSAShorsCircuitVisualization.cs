@@ -150,6 +150,9 @@ class RSAShorsCircuitVisualization : IVisualization<RSA, API_QUANTUMCIRCUIT> {
             },
             metadata = new Dictionary<string, object?> {
                 ["caption"] = caption,
+                // A picture of the circuit the quantum service runs, not an instance to build: Redux_Frontend
+                // turns off its drag-and-drop circuit editing for it.
+                ["readOnly"] = true,
                 // Every column the full circuit uses, so stepping through it keeps the diagram's width.
                 ["layoutTimes"] = Enumerable.Range(0, t + 3).ToArray(),
                 // Redux_Frontend's Shor's explorer page, which has the parts this picture can't draw.
